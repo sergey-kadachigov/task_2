@@ -11,7 +11,17 @@ function initCounter() {
 	function Counter(options) {
 		this.options = $.extend({
 			holder: '.counter',
-			limitation: 9999999
+			thisTextArea: 'textarea',
+
+			limitation: 9999999,
+			dataLimitation: 'data-lim',
+
+			resultChar: '.char',
+			resultReserve: '.reserve',
+			resultWords: '.words',
+			resultSpaces: '.spaces',
+			resultLetters: '.letters',
+			resultNumbers: '.numbers'
 		}, options);
 		this.init();
 	};
@@ -21,38 +31,27 @@ function initCounter() {
 			if (this.options.holder) {
 				this.findElements();
 				this.attachEvents();
-				this.defaultInfo();
+				this.activeSearch();
 			}
 		},
 		findElements: function () {
 			this.holder = $(this.options.holder);
-			this.textArea = this.holder.find('textarea');
-			this.blockChar = $(this.holder.find('.char'));
-			this.limitationChar = this.holder.attr('data-lim') * 1 || this.options.limitation;
-			this.blockReserve = this.holder.find('.reserve');
-			this.blockWords = this.holder.find('.words');
-			this.blockSpaces = this.holder.find('.spaces');
-			this.blockLetters = this.holder.find('.letters');
-			this.blockNumbers = this.holder.find('.numbers');
+			this.textArea = this.holder.find(this.options.thisTextArea);
+
+			this.limitationChar = this.holder.attr(this.options.dataLimitation) * 1 || this.options.limitation;
+
+			this.blockChar = $(this.holder.find(this.options.resultChar));
+			this.blockReserve = this.holder.find(this.options.resultReserve);
+			this.blockWords = this.holder.find(this.options.resultWords);
+			this.blockSpaces = this.holder.find(this.options.resultSpaces);
+			this.blockLetters = this.holder.find(this.options.resultLetters);
+			this.blockNumbers = this.holder.find(this.options.resultNumbers);
 		},
 		attachEvents: function () {
 			var self = this;
-			this.textArea.on('keyup keypress', function () {
-				self.allChars = self.textArea.val();
-				if (self.limitationChar > self.allChars.length) {
-					self.blockChar.text(self.searchAllChar());
-					self.blockReserve.text(self.searchReserve());
-					self.blockWords.text(self.searchAllWords());
-					self.blockLetters.text(self.searchOnlyLetters());
-					self.blockNumbers.text(self.searchOnlyNumbers());
-					self.blockSpaces.text(self.searchSpace());
-				} else {
-					self.blockChar.text(self.searchAllChar());
-					self.blockReserve.text(self.searchReserve());
-					self.blockWords.text(self.searchAllWords());
-					self.blockLetters.text(self.searchOnlyLetters());
-					self.blockNumbers.text(self.searchOnlyNumbers());
-					self.blockSpaces.text(self.searchSpace());
+			this.textArea.on('keyup.counter keypress.counter', function () {
+				self.activeSearch();
+				if (self.limitationChar <= self.allChars.length) {
 					return false;
 				}
 			});
@@ -61,7 +60,7 @@ function initCounter() {
 			return this.allChars.replace(/[^A-Za-zА-Яа-яЁё]/g, "").length;
 		},
 		searchOnlyNumbers: function () {
-			return this.allChars.replace(/\D+/g,"").length;
+			return this.allChars.replace(/\D+/g, "").length;
 		},
 		searchSpace: function () {
 			return this.allChars.split('').length - this.allChars.split(' ').join('').length;
@@ -73,31 +72,31 @@ function initCounter() {
 			return this.limitationChar - this.allChars.length;
 		},
 		searchAllWords: function () {
-			if(this.allChars.split(' ').join('').length){
+			if (this.allChars.split(' ').join('').length) {
 				return $.trim(this.allChars).replace(/[ \t]{2,}/g, ' ').split(' ').length;
 			} else {
 				return 0;
 			}
 		},
-		defaultInfo: function () {
-			var self = this;
-			self.allChars = self.textArea.val();
-			if (self.limitationChar > self.allChars.length) {
-				self.blockChar.text(self.searchAllChar());
-				self.blockReserve.text(self.searchReserve());
-				self.blockWords.text(self.searchAllWords());
-				self.blockLetters.text(self.searchOnlyLetters());
-				self.blockNumbers.text(self.searchOnlyNumbers());
-				self.blockSpaces.text(self.searchSpace());
-			} else {
-				self.blockChar.text(self.searchAllChar());
-				self.blockReserve.text(self.searchReserve());
-				self.blockWords.text(self.searchAllWords());
-				self.blockLetters.text(self.searchOnlyLetters());
-				self.blockNumbers.text(self.searchOnlyNumbers());
-				self.blockSpaces.text(self.searchSpace());
-				return false;
-			}
+		activeSearch: function () {
+			this.allChars = this.textArea.val();
+			this.blockChar.text(this.searchAllChar());
+			this.blockReserve.text(this.searchReserve());
+			this.blockWords.text(this.searchAllWords());
+			this.blockLetters.text(this.searchOnlyLetters());
+			this.blockNumbers.text(this.searchOnlyNumbers());
+			this.blockSpaces.text(this.searchSpace());
+		},
+
+		destroy: function () {
+			var spare = '';
+			this.blockChar.text(spare);
+			this.blockReserve.text(spare);
+			this.blockWords.text(spare);
+			this.blockLetters.text(spare);
+			this.blockNumbers.text(spare);
+			this.blockSpaces.text(spare);
+			this.textArea.off('keyup.counter keypress.counter');
 		}
 	};
 
